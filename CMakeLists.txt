@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.9.4)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 17)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+  message(STATUS "Setting release build type")
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+project(NextVideo CXX C)
+
+add_subdirectory(lib/glfw)
+add_subdirectory(lib/glm)
+add_subdirectory(lib/imgui)
+add_subdirectory(lib/implot)
+# add_subdirectory(lib/assimp)
+add_subdirectory(lib/glew)
+
+file(GLOB_RECURSE ENGINE src/engine/*.cpp)
+file(GLOB GL src/backends/gl.cpp)
+file(GLOB VK src/backends/vk.cpp)
+
+add_library(NextVideo ${ENGINE})
+add_library(NextVideoGL ${GL})
+target_link_libraries(NextVideo glfw glm imgui implot)
+target_include_directories(NextVideo PUBLIC include lib lib/imgui)
+target_include_directories(NextVideoGL PUBLIC include lib lib/imgui)
+target_link_libraries(NextVideoGL glew NextVideo)
+
+file(GLOB FDM srcTests/fdm.cpp)
+add_executable(fdm ${FDM})
+target_link_libraries(fdm NextVideoGL GL)
+target_include_directories(fdm PUBLIC include src/engine lib)
+
+file(GLOB TEST srcTests/test.cpp)
+add_executable(test ${TEST})
+target_link_libraries(test NextVideoGL GL)
+target_include_directories(test PUBLIC include src/engine lib)
